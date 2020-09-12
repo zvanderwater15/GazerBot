@@ -8,5 +8,6 @@ setup(name='gazerbot',
       author='Zoe vanderWater',
       author_email='zoe.van42@gmail.com',
       url='https://github.com/zvanderwater15/GazerBot',
-      packages=['gazerbot']
+      packages=['gazerbot'],
+      scripts=['scripts/run.py']
      )
