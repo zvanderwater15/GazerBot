@@ -3,4 +3,7 @@ from gazerbot import genius
 import pytest
 
 def test_get_lyrics():
-    assert genius.get_lyrics()
+    artist = "The Beatles"
+    song = "Yesterday"
+    lyrics = genius.get_lyrics(artist, song)
+    assert lyrics
