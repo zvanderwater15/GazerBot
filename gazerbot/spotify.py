@@ -12,20 +12,34 @@ def generate_token():
     return token
 
 
-def get_user_playlists(user, limit=50):
+def get_user_playlists(user):
     token = generate_token()
     spotify = spotipy.Spotify(auth=token)
+    playlist_response = spotify.user_playlists(user)
+    playlists = []
 
-    return spotify.user_playlists(user, limit=limit)
+    # go through each page of api responses and compile the total list of user playlists
+    while playlist_response:
+        for i, playlist in enumerate(playlist_response['items']):
+            playlists.append({
+                'name': playlist['name'], 
+                'id' : playlist['id']
+            })
+        if playlist_response['next']:
+            playlist_response = spotify.next(playlist_response)
+        else:
+            playlist_response = None
+    return playlists
 
 def get_tracks_from_playlist(user, playlist_name):
+    print("attempting to get tracks from playlist ", playlist_name)
     token = generate_token()
     spotify = spotipy.Spotify(auth=token)
 
     playlist_id = None
 
     # search all playlists for the specific user to get the playlist id using the playlist name
-    for playlist in get_user_playlists(user, 10)['items']:
+    for playlist in get_user_playlists(user):
         if playlist['name'] == playlist_name:
             playlist_id = playlist['id']
             break
