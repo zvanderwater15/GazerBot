@@ -45,15 +45,20 @@ def get_tracks_from_playlist(user, playlist_name):
             break
 
     # get all information for this playlist including tracks
-    playlist_tracks = spotify.user_playlist(user, playlist_id,
-                                    fields='tracks,next,name')
+    playlist_tracks = spotify.user_playlist(user, playlist_id, fields='tracks,next,name')['tracks']
 
-    # create and return a list of the artist name and title of each track
     track_artist_title_list = []
-    for playlist_track in playlist_tracks['tracks']['items']:
-        track = playlist_track['track']
-        track_name = track['name']
-        track_artist = track['artists'][0]['name']
-        track_artist_title_list.append({"artist": track_artist, "title": track_name})
+    # create and return a list of the artist name and title of each track
+    while playlist_tracks:
+        for i, playlist in enumerate(playlist_tracks['items']):
+            track = playlist['track']
+            track_name = track['name']
+            track_artist = track['artists'][0]['name']
+            track_artist_title_list.append({"artist": track_artist, "title": track_name})
+        if playlist_tracks['next']:
+            playlist_tracks = spotify.next(playlist_tracks)
+        else:
+            playlist_tracks = None
 
+    print(f"playlist length: {len(track_artist_title_list)} songs")
     return track_artist_title_list
