@@ -13,7 +13,8 @@ setup(name='gazerbot',
             'spotipy',
             'numpy',
             'lyricsgenius',
-            'pytest'
+            'pytest',
+            'nltk'
       ], 
       scripts=['scripts/run.py']
 )
