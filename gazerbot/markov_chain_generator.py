@@ -4,11 +4,9 @@ import re
 from collections import defaultdict
 from gazerbot import helpers, analyzers
 
-def markov_chain_generator(lyrics_list, num_lines):
+def markov_chain_generator(lyrics_list, num_words):
     song = ""
     all_lyrics = helpers.join_and_filter_all_lyrics(lyrics_list)
-    line_lengths, line_length_weights = analyzers.line_length_probability(all_lyrics)
-    #TODO keep new line markers in word list
     word_list = helpers.lyrics_to_word_list(all_lyrics)
     word_list = helpers.only_english_words(word_list)
     # Create graph.
@@ -21,8 +19,7 @@ def markov_chain_generator(lyrics_list, num_lines):
         markov_graph[last_word][word] += 1
         last_word = word
 
-    for i in range(num_lines):
-        song += (' '.join(_walk_graph(markov_graph, distance=np.random.choice(line_lengths, None, p=line_length_weights))) + '\n')
+    song = ' '.join(_walk_graph(markov_graph, distance=(num_words+40)))
 
     return song
 
