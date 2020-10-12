@@ -131,5 +131,6 @@ dmypy.json
 # secret
 secret*
 
-#lyric results
+#lyric results and output
 lyrics/
+*.txt
