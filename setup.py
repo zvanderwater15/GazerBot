@@ -14,7 +14,11 @@ setup(name='gazerbot',
             'numpy',
             'lyricsgenius',
             'pytest',
-            'nltk'
+            'nltk',
+            'Click'
       ], 
-      scripts=['scripts/run.py']
+      entry_points='''
+        [console_scripts]
+        gazerbot=gazerbot.cli:generate
+      '''
 )
