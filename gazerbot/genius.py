@@ -7,18 +7,25 @@ def get_lyrics(artist, title):
     lyric_file = f"lyrics/db/{helpers.normalize(artist+title)}.json"
     try:
         f = open(lyric_file, "r") # already downloaded lyrics
-        song_data = json.load(f)
+        song_data = json.load(f)            
         f.close()
-        return song_data["lyrics"]
+        if 'error' in song_data:
+            return None
+        else:
+            return song_data["lyrics"]
     except:
         genius = lyricsgenius.Genius(secrets.GENIUS_TOKEN)
         song = genius.search_song(title, artist=artist)
 
         if (song and helpers.normalize(song.title) not in helpers.normalize(title)):
-            print(f"MISMATCH ERROR: {song.title}")
+            err = f"MISMATCH ERROR: {song.title}"
+            print(err)
+            helpers.write_to_file(lyric_file, json.dumps({"error": err}), True)
             return None
         elif not song or len(song.lyrics) <= 1:
-            print(f"NO LYRICS: {title}")
+            err = f"NO LYRICS: {title}"
+            print(err)
+            helpers.write_to_file(lyric_file,  json.dumps({"error": err}), True)
             return None
         else:
             song.save_lyrics(lyric_file, sanitize=False, overwrite=True)

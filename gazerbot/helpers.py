@@ -13,7 +13,7 @@ def join_and_filter_all_lyrics(lyrics_list):
 def lyrics_to_word_list(lyrics, keep_lines=True):
     if keep_lines:
         line_list = re.split(r'(\n)', lyrics)
-        word_list = [line.split(' ') for line in line_list] # split by word
+        word_list = [line.replace(u'\u2005', ' ').split(' ') for line in line_list] # split by word
         word_list  = list(itertools.chain(*word_list))
     else:
         word_list = lyrics.split()
@@ -21,13 +21,9 @@ def lyrics_to_word_list(lyrics, keep_lines=True):
     word_list = [word.lower() for word in word_list if word not in ["I", "I've", "I'll", "I'm"]]
     return word_list
 
-def only_english_words(word_list):
-    words = set(nltk.corpus.words.words())
-    english_lyrics = [word for word in word_list if word.lower() in words or not word.isalpha()]
-    return english_lyrics
-
-def write_to_file(file_name, text):
-    f = open(file_name, "a", encoding="utf-8")
+def write_to_file(file_name, text, overwrite=False):
+    mode = "w" if overwrite else "a"
+    f = open(file_name, mode, encoding="utf-8")
     f.write(f"\n{text}\n")
     f.close()
 
