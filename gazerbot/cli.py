@@ -14,7 +14,12 @@ def generate():
 @click.option('--fout', prompt=True, default='results.txt', help='Output file to print generate lyrics to')
 def lyrics(user, playlist, numsongs, fout):
     lyrics_list = []
-    helpers.write_to_file(fout, playlist)
+    helpers.write_to_file(fout, f"PLAYLIST: \n {playlist}")
+    tracks = spotify.get_tracks_from_playlist(user, playlist)
+    if not len(tracks):
+        print("Playlist not found")
+        raise (SystemExit)
+
     for track in spotify.get_tracks_from_playlist(user, playlist):
         lyrics = genius.get_lyrics(track["artist"], track["title"])
         if lyrics:
