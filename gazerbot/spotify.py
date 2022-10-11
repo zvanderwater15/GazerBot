@@ -1,17 +1,22 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from gazerbot import helpers
-from gazerbot import secrets
+from gazerbot import api_secrets
 
 def credentials():
     return SpotifyClientCredentials(
-        client_id=secrets.SPOTIFY_ID,
-        client_secret=secrets.SPOTIFY_SECRET)
+        client_id=api_secrets.SPOTIFY_ID,
+        client_secret=api_secrets.SPOTIFY_SECRET)
 
 
 def get_user_playlists(user):
     spotify = spotipy.Spotify(auth_manager=credentials())
-    playlist_response = spotify.user_playlists(user)
+    try:
+        playlist_response = spotify.user_playlists(user)
+    except spotipy.exceptions.SpotifyException as e: 
+        # playlist isn't found, set a blank response
+        playlist_response = None
+
     playlists = []
 
     # go through each page of api responses and compile the total list of user playlists
@@ -21,7 +26,7 @@ def get_user_playlists(user):
                 'name': playlist['name'], 
                 'id' : playlist['id']
             })
-        if playlist_response['next']:
+        if playlist_response.get('next'):
             playlist_response = spotify.next(playlist_response)
         else:
             playlist_response = None

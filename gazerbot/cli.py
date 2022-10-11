@@ -1,4 +1,4 @@
-from gazerbot import spotify, genius, markov_chain_generator, naive_shuffler, analyzers, secrets, helpers
+from . import api_secrets, lyrics as _lyrics, spotify, markov_chain_generator, naive_shuffler, analyzers, helpers
 import re
 import random 
 import click
@@ -19,12 +19,13 @@ def lyrics(user, playlist, numsongs, fout):
     if not len(tracks):
         print("Playlist not found")
         raise (SystemExit)
-
-    for track in spotify.get_tracks_from_playlist(user, playlist):
-        lyrics = genius.get_lyrics(track["artist"], track["title"])
+    genius = _lyrics.Genius()
+    for track in tracks:
+        song = _lyrics.Song(track["artist"], track["title"])
+        lyrics = song.get_lyrics(genius)
         if lyrics:
             lyrics_list.append(lyrics)
-        
+
     average_word_count = analyzers.average_word_count(lyrics_list)
     average_line_count = analyzers.average_num_lines(lyrics_list)
     stats = f"STATS:\n AVE WORDS: {average_word_count}\nAVE LINES: {average_line_count}"

@@ -1,18 +1,22 @@
 from .context import gazerbot
-from gazerbot import genius
+from gazerbot import lyrics as _lyrics
 import pytest
 
 
 def test_get_lyrics():
     artist = "The Beatles"
     song = "Yesterday"
-    lyrics = genius.get_lyrics(artist, song)
+    genius = _lyrics.Genius()
+    track = _lyrics.Song(artist, song)
+    lyrics = track.get_lyrics(genius)
 
-    assert "All my troubles seemed" in lyrics
+    assert "all my troubles seemed" in lyrics
 
 def test_get_nonexistent_lyrics():
     artist = "The Beatles"
-    song = "Not Yesterday"
-    lyrics = genius.get_lyrics(artist, song)
+    song = "not yesterday"
+    genius = _lyrics.Genius()
+    track = _lyrics.Song(artist, song)
+    lyrics = track.get_lyrics(genius)
 
     assert not lyrics

@@ -128,9 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# secret
-secret*
-
 #lyric results and output
 lyrics/
 *.txt

@@ -1,8 +1,8 @@
 import numpy as np
 import random
 import re
-from collections import defaultdict
 from gazerbot import helpers
+
 def shuffle_lyrics_naive(lyrics_list, num_lines, num_words):
     all_lyrics = helpers.join_and_filter_all_lyrics(lyrics_list)
     word_list = helpers.lyrics_to_word_list(all_lyrics, keep_lines=False)
