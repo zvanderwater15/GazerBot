@@ -9,14 +9,6 @@ setup(name='gazerbot',
       author_email='zoe.van42@gmail.com',
       url='https://github.com/zvanderwater15/GazerBot',
       packages=['gazerbot'],
-      install_requires=[
-            'spotipy',
-            'numpy',
-            'lyricsgenius',
-            'pytest',
-            'nltk',
-            'Click'
-      ], 
       entry_points='''
         [console_scripts]
         gazerbot=gazerbot.cli:generate

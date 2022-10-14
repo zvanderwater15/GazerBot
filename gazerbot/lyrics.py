@@ -7,10 +7,10 @@ import sys
 
 def sanitize_lyrics(lyrics):
     # each line starts with "song title" "lyrics", so remove these words
-    sans_title = lyrics[lyrics.index('\n') + 1:]
+    sans_title = lyrics[lyrics.index('\n') + 1:] if '\n' in lyrics else lyrics
     # remove Embed or 1embed  or {num}embed at the end of each song
     sans_recommendation = sans_title.lower().replace("you might also like", "")
-    sans_embed = re.sub(r'([0-9]|[1-9][0-9])embed', '', sans_recommendation)
+    sans_embed = re.sub(r'([0-9]|[1-9][0-9])?embed', '', sans_recommendation)
     return sans_embed
 
 class Song:
@@ -35,6 +35,7 @@ class Song:
             self.lyrics = sanitize_lyrics(lyrics)
         else:
             self.lyrics = None
+
         return self.lyrics
        
     def _load_from_file(self):
@@ -43,7 +44,7 @@ class Song:
             f = open(self.file, "r") # already downloaded lyrics
         except OSError as e:
             print(f"{type(e)}: {e}", file=sys.stderr)
-            sys.exit(1)
+            return None
             
         try:
             song_data = json.load(f)
@@ -64,18 +65,18 @@ class Genius:
     def __init__(self):
         self.genius = lyricsgenius.Genius(api_secrets.GENIUS_TOKEN)
         self.genius.remove_section_headers = True
-        self.cache = "/lyrics/db"
 
     def get_lyrics(self, artist, title, save_file):
         song = self.genius.search_song(title, artist=artist)
+        err = None
         if song and helpers.normalize(song.title) not in helpers.normalize(title):
             err = f"MISMATCH ERROR: {song.title}"
         elif not song or len(song.lyrics) <= 1:
             err = f"NO LYRICS: {title}"
-
+        print(save_file)
         if err:
-            helpers.write_to_file(save_file,  json.dumps({"error": err}), True)
+            helpers.write_to_file(save_file, json.dumps({"error": err}), True)
             return None
         else:
-            song.save_lyrics(save_file, overwrite=True)
+            song.save_lyrics(save_file, sanitize=False, overwrite=True)
             return song.lyrics
