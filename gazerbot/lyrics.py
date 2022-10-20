@@ -5,6 +5,9 @@ from gazerbot import api_secrets, helpers
 import os
 import sys
 
+class LyricError(Exception):
+    pass
+
 def sanitize_lyrics(lyrics):
     # each line starts with "song title" "lyrics", so remove these words
     sans_title = lyrics[lyrics.index('\n') + 1:] if '\n' in lyrics else lyrics
@@ -14,10 +17,10 @@ def sanitize_lyrics(lyrics):
     return sans_embed
 
 class Song:
-    def __init__(self, artist, title):
+    def __init__(self, db, artist, title):
         self.artist = artist
         self.title = title
-        self.file = f"lyrics/db/{helpers.normalize(self.artist+self.title)}.json"
+        self.db = db
         self.lyrics = None
     
     def __str__(self):
@@ -27,19 +30,21 @@ class Song:
         if self.lyrics:
             return self.lyrics
 
-        lyrics = self._load_from_file()
-        if not lyrics:
-            lyrics = genius.get_lyrics(self.artist, self.title, self.file)
-
-        if lyrics:
-            self.lyrics = sanitize_lyrics(lyrics)
+        track = self.db.get_track(self.artist, self.title)
+        if track and not track["error"]:
+            self.lyrics = track["content"]
         else:
-            self.lyrics = None
+            try:
+                self.lyrics = genius.get_lyrics(self.artist, self.title)
+                self.lyrics = sanitize_lyrics(self.lyrics)
+                self.db.insert_track(self.artist, self.title, sanitize_lyrics(self.lyrics))
+            except LyricError as e:
+                self.lyrics = None
+                self.db.insert_track_error(self.artist, self.title, e)
 
         return self.lyrics
        
     def _load_from_file(self):
-        # print("lyrics from..", os.path.abspath(os.path.join(os.path.dirname(__file__))))
         try:
             f = open(self.file, "r") # already downloaded lyrics
         except OSError as e:
@@ -63,20 +68,13 @@ class Song:
 
 class Genius:
     def __init__(self):
-        self.genius = lyricsgenius.Genius(api_secrets.GENIUS_TOKEN)
+        self.genius = lyricsgenius.Genius(api_secrets.GENIUS_TOKEN, sleep_time=0.5)
         self.genius.remove_section_headers = True
 
-    def get_lyrics(self, artist, title, save_file):
+    def get_lyrics(self, artist, title):
         song = self.genius.search_song(title, artist=artist)
-        err = None
         if song and helpers.normalize(song.title) not in helpers.normalize(title):
-            err = f"MISMATCH ERROR: {song.title}"
+            raise LyricError(f"MISMATCH ERROR: {song.title}")
         elif not song or len(song.lyrics) <= 1:
-            err = f"NO LYRICS: {title}"
-        print(save_file)
-        if err:
-            helpers.write_to_file(save_file, json.dumps({"error": err}), True)
-            return None
-        else:
-            song.save_lyrics(save_file, sanitize=False, overwrite=True)
-            return song.lyrics
+            raise LyricError(f"NO LYRICS: {title}")
+        return song.lyrics

@@ -1,6 +1,7 @@
-from . import lyrics as _lyrics, markov, spotify, analyzers, helpers
+from . import lyrics as _lyrics, markov, spotify, analyzers, helpers, database
 import random 
 import click
+
 
 @click.group()
 def generate():
@@ -35,11 +36,13 @@ def run(user, playlist, numsongs):
         print("Playlist not found")
         raise 
     genius = _lyrics.Genius()
-    for track in tracks:
-        song = _lyrics.Song(track["artist"], track["title"])
-        lyrics = song.get_lyrics(genius)
-        if lyrics:
-            lyrics_list.append(lyrics)
+    with database.LyricDatabaseContext() as db:
+        print("db", db)
+        for track in tracks:
+            song = _lyrics.Song(db, track["artist"], track["title"])
+            lyrics = song.get_lyrics(genius)
+            if lyrics:
+                lyrics_list.append(lyrics)
 
     average_word_count = analyzers.average_word_count(lyrics_list)
     average_line_count = analyzers.average_num_lines(lyrics_list)
